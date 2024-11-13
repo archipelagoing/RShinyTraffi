@@ -1,0 +1,8 @@
+```{r}
+traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
+
+
+
+```
+
+
