@@ -1,13 +1,13 @@
 ```{r}
 traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
-
 ```
 ```{r}
 library(ggplot2)
 library(dplyr)
 ```
 
+Visualization 1 - Scatter plot of age range by total violation
 ```{r}
 traffic_data <- traffic_data |>
   mutate(age_range = case_when(
@@ -30,5 +30,10 @@ theme_minimal()
 
 ```
 
+Visualization 2 - Top 5 types of violations by age range
+```{r}
+age16_25 |> 
+  group_by(Violation.Description)
 
+```
 
