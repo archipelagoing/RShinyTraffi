@@ -1,8 +1,5 @@
 ```{r}
 traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
-
-```
-```{r}
 library(ggplot2)
 library(dplyr)
 ```
@@ -27,13 +24,29 @@ traffic_data_2 <- traffic_data |>
 ggplot(data = traffic_data_2, mapping = aes(x = age_range, y= tot_violations)) +
 geom_point() +
 theme_minimal()
-
 ```
 
 Visualization 2 - Top 5 types of violations by age range
 ```{r}
-age16_25 |> 
-  group_by(Violation.Description)
+top_5_violations <- traffic_data |>
+  group_by(Violation.Description) |>
+  summarise(count = n()) |>
+  arrange(desc(count)) |>
+  slice_head(n = 5)
 
+filtered_data <- traffic_data |>
+  filter(Violation.Description %in% top_5_violations$Violation.Description) |>
+  group_by(age_range, Violation.Description) |>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(filtered_data, aes(x = age_range, y = count, fill = Violation.Description)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Top 5 Violations by Age Range",
+    x = "Age Range",
+    y = "Number of Violations",
+    fill = "Violation Type"
+  ) +
+  theme_minimal()
 ```
 
