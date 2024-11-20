@@ -1,6 +1,1 @@
-```{r}
-library(shiny)
-runExample("01_hello")
-
-```
-
+Welcome to our RShiny Traffic Violation Project. This pop-up will display information and detailed analysis pertaining to our data.

@@ -1,0 +1,52 @@
+```{r}
+traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
+library(ggplot2)
+library(dplyr)
+```
+
+Visualization 1 - Scatter plot of age range by total violation
+```{r}
+traffic_data <- traffic_data |>
+  mutate(age_range = case_when(
+    Age.at.Violation >= 16 & Age.at.Violation <= 25 ~ "16-25",
+    Age.at.Violation >= 26 & Age.at.Violation <= 35 ~ "26-35",
+    Age.at.Violation >= 36 & Age.at.Violation <= 45 ~ "36-45",
+    Age.at.Violation >= 46 & Age.at.Violation <= 55 ~ "46-55",
+    Age.at.Violation >= 56 & Age.at.Violation <= 65 ~ "56-65",
+    Age.at.Violation >= 66 & Age.at.Violation <= 75 ~ "66-75",
+    Age.at.Violation >= 76 & Age.at.Violation <= 85 ~ "76-85",
+    Age.at.Violation >= 86 & Age.at.Violation <= 95 ~ "86-95",
+  ))
+traffic_data_2 <- traffic_data |>
+  group_by(age_range)|>
+  summarise(tot_violations = n())
+
+ggplot(data = traffic_data_2, mapping = aes(x = age_range, y= tot_violations)) +
+geom_point() +
+theme_minimal()
+```
+
+Visualization 2 - Top 5 types of violations by age range
+```{r}
+top_5_violations <- traffic_data |>
+  group_by(Violation.Description) |>
+  summarise(count = n()) |>
+  arrange(desc(count)) |>
+  slice_head(n = 5)
+
+filtered_data <- traffic_data |>
+  filter(Violation.Description %in% top_5_violations$Violation.Description) |>
+  group_by(age_range, Violation.Description) |>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(filtered_data, aes(x = age_range, y = count, fill = Violation.Description)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Top 5 Violations by Age Range",
+    x = "Age Range",
+    y = "Number of Violations",
+    fill = "Violation Type"
+  ) +
+  theme_minimal()
+```
+
