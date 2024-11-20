@@ -5,8 +5,6 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 
-
-
 # Load the data (replace the path with the correct one when running locally)
 traffic_data <- read.csv("./Backend/Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
@@ -36,7 +34,8 @@ ui <- fluidPage(
       selectInput("gender", "Select Gender:", 
                   choices = c("All", unique(traffic_data$Gender)),
                   selected = "All"),
-      selectInput("violation", "Select Violation Type:", choices = c("All", unique(traffic_data$Violation.Description)),
+      selectInput("violation", "Select Violation Type:", 
+                  choices = c("All", unique(traffic_data$Violation.Description)),
                   selected = "All"),
       actionButton("show_report", "Show Detailed Report", class = "btn-primary mt-3")
     ),
@@ -151,18 +150,6 @@ server <- function(input, output) {
       footer = modalButton("Close")
     ))
   })
-  # Opening R Markdown File
-  observeEvent(input$show_report, {
-    showModal(modalDialog(
-      title = "Detailed Traffic Report/Analysis",
-      includeMarkdown("frontEnd.Rmd"),
-      size = "l",  
-      easyClose = TRUE,
-      footer = modalButton("Close")
-    ))
-  })
-  
-  
 }
 
 # Run the application 

@@ -1,0 +1,15 @@
+```{r}
+traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
+```
+
+```{r}
+age16_25 <- subset(traffic_data, Age.at.Violation >= 16 & Age.at.Violation <= 25)
+age26_35 <- subset(traffic_data, Age.at.Violation >= 26 & Age.at.Violation <= 35)
+age36_45 <- subset(traffic_data, Age.at.Violation >= 36 & Age.at.Violation <= 45)
+age46_55 <- subset(traffic_data, Age.at.Violation >= 46 & Age.at.Violation <= 55)
+age56_65 <- subset(traffic_data, Age.at.Violation >= 56 & Age.at.Violation <= 65)
+age66_75 <- subset(traffic_data, Age.at.Violation >= 66 & Age.at.Violation <= 75)
+age76_85 <- subset(traffic_data, Age.at.Violation >= 76 & Age.at.Violation <= 85)
+age86_95 <- subset(traffic_data, Age.at.Violation >= 86 & Age.at.Violation <= 95)
+```
+
