@@ -72,13 +72,7 @@ ui <- fluidPage(
     ),
     # Tab 4: Plot 4
     tabPanel(
-      "Plot 4",
-      uiOutput("visualsOutput"),
-      uiOutput("ageSubsetsOutput")
-    ),
-    # Tab 5: Report
-    tabPanel(
-      "Report",
+      "Traffic Violations Trends by Age Group (2020-2023)",
       sidebarLayout(
         sidebarPanel(
           selectInput("age_group_interactive", "Select Age Group:", 
@@ -89,14 +83,34 @@ ui <- fluidPage(
           plotlyOutput("interactivePlot")
         )
       )
+    ),
+ 
+    # Tab 5: Report
+tabPanel(
+  "Report",
+  fluidRow(
+    column(
+      width = 12,
+      h3("Traffic Violations Analysis Report"),
+      p("Text"),
+      p("Key findings include:"),
+      tags$ul(
+        tags$li("Text."),
+        tags$li("Text."),
+        tags$li("Text."),
+        tags$li("Text.")
+      ),
+      p("Text.")
     )
   )
+)
+)
 )
 
 # Define server logic
 server <- function(input, output) {
   
-  # Tab 1: Overview
+  # Tab 1: Plot 1
   filtered_data <- reactive({
     data <- traffic_data
     
@@ -130,7 +144,7 @@ server <- function(input, output) {
     filtered_data()
   })
   
-  # Tab 2: Scatter Plot
+  # Tab 2: Plot 2
   output$scatterPlot <- renderPlot({
     traffic_data_2 <- traffic_data %>%
       group_by(Age_Group) %>%
@@ -144,7 +158,7 @@ server <- function(input, output) {
            y = "Total Violations")
   })
   
-  # Tab 3: Top Violations
+  # Tab 3: Plot 3
   output$topViolationsPlot <- renderPlot({
     data <- filtered_data()
     
@@ -170,16 +184,7 @@ server <- function(input, output) {
       theme_minimal()
   })
   
-  # Tab 4: Markdown Outputs
-  output$visualsOutput <- renderUI({
-    includeMarkdown("Visuals.Rmd")
-  })
-  
-  output$ageSubsetsOutput <- renderUI({
-    includeMarkdown("age_subsets.Rmd")
-  })
-  
-  # Tab 5: Interactive Plot
+  # Tab 4: Plot 4
   filtered_interactive_data <- reactive({
     if (input$age_group_interactive == "All") {
       plot_data  
