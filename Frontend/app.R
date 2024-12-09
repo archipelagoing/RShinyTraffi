@@ -4,9 +4,10 @@ library(dplyr)
 library(knitr)
 library(markdown)
 library(rmarkdown)
+library(plotly)
 
 # Load the data (replace the path with the correct one when running locally)
-traffic_data <- read.csv("./Backend/Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
+traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
 # Add Age Group column to the dataset
 traffic_data <- traffic_data %>%
@@ -21,40 +22,81 @@ traffic_data <- traffic_data %>%
     Age.at.Violation >= 86 & Age.at.Violation <= 95 ~ "86-95",
     TRUE ~ "Other"
   ))
+# Top 5 violations data 
+top_violations <- traffic_data %>%
+  group_by(Violation.Description) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  slice_head(n = 5)
 
-# Define UI for the app
+plot_data <- traffic_data %>%
+  filter(Violation.Description %in% top_violations$Violation.Description) %>%
+  group_by(Violation.Year, Age_Group) %>%
+  summarise(total_violations = n(), .groups = "drop")
+
+# Define UI
 ui <- fluidPage(
-  titlePanel("Traffic Tickets Visualization"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("age_group", "Select Age Group:", 
-                  choices = c("All", unique(traffic_data$Age_Group)),
-                  selected = "All"),
-      selectInput("gender", "Select Gender:", 
-                  choices = c("All", unique(traffic_data$Gender)),
-                  selected = "All"),
-      selectInput("violation", "Select Violation Type:", 
-                  choices = c("All", unique(traffic_data$Violation.Description)),
-                  selected = "All"),
-      actionButton("show_report", "Show Detailed Report", class = "btn-primary mt-3")
+  titlePanel("NYC Traffic Violations App"),
+  tabsetPanel(
+    # Tab 1: Plot 1
+    tabPanel(
+      "Plot 1",
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("age_group", "Select Age Group:", 
+                      choices = c("All", unique(traffic_data$Age_Group)),
+                      selected = "All"),
+          selectInput("gender", "Select Gender:", 
+                      choices = c("All", unique(traffic_data$Gender)),
+                      selected = "All"),
+          selectInput("violation", "Select Violation Type:", 
+                      choices = c("All", unique(traffic_data$Violation.Description)),
+                      selected = "All"),
+          actionButton("show_report", "Show Detailed Report", class = "btn-primary mt-3")
+        ),
+        mainPanel(
+          plotOutput("ticketPlot"),
+          dataTableOutput("ticketTable")
+        )
+      )
     ),
-    
-    mainPanel(
-      plotOutput("ticketPlot"),
-      plotOutput("scatterPlot"),
-      plotOutput("topViolationsPlot"),
-      dataTableOutput("ticketTable"),
+    # Tab 2: Plot 2
+    tabPanel(
+      "Plot 2",
+      plotOutput("scatterPlot")
+    ),
+    # Tab 3: Plot 3
+    tabPanel(
+      "Plot 3",
+      plotOutput("topViolationsPlot")
+    ),
+    # Tab 4: Plot 4
+    tabPanel(
+      "Plot 4",
       uiOutput("visualsOutput"),
       uiOutput("ageSubsetsOutput")
+    ),
+    # Tab 5: Report
+    tabPanel(
+      "Report",
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("age_group_interactive", "Select Age Group:", 
+                      choices = c("All", levels(factor(unique(plot_data$Age_Group)))), 
+                      selected = "All")
+        ),
+        mainPanel(
+          plotlyOutput("interactivePlot")
+        )
+      )
     )
   )
 )
 
-# Define server logic for the app
+# Define server logic
 server <- function(input, output) {
   
-  # Reactive data based on user input
+  # Tab 1: Overview
   filtered_data <- reactive({
     data <- traffic_data
     
@@ -73,7 +115,6 @@ server <- function(input, output) {
     return(data)
   })
   
-  # Plot output
   output$ticketPlot <- renderPlot({
     ggplot(filtered_data(), aes(x = Violation.Description, fill = Gender)) +
       geom_bar(position = "dodge") +
@@ -85,7 +126,11 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
   
-  # Scatter plot of age range by total violation
+  output$ticketTable <- renderDataTable({
+    filtered_data()
+  })
+  
+  # Tab 2: Scatter Plot
   output$scatterPlot <- renderPlot({
     traffic_data_2 <- traffic_data %>%
       group_by(Age_Group) %>%
@@ -99,7 +144,7 @@ server <- function(input, output) {
            y = "Total Violations")
   })
   
-  # Top 5 types of violations by age range and gender
+  # Tab 3: Top Violations
   output$topViolationsPlot <- renderPlot({
     data <- filtered_data()
     
@@ -125,33 +170,54 @@ server <- function(input, output) {
       theme_minimal()
   })
   
-  # Table output
-  output$ticketTable <- renderDataTable({
-    filtered_data()
-  })
-  
-  # Render Visuals.Rmd
+  # Tab 4: Markdown Outputs
   output$visualsOutput <- renderUI({
     includeMarkdown("Visuals.Rmd")
   })
   
-  # Render age_subsets.Rmd
   output$ageSubsetsOutput <- renderUI({
     includeMarkdown("age_subsets.Rmd")
   })
   
-  # Opening R Markdown File
-  observeEvent(input$show_report, {
-    showModal(modalDialog(
-      title = "Detailed Traffic Report/Analysis",
-      includeMarkdown("frontEnd.Rmd"),
-      size = "l",  
-      easyClose = TRUE,
-      footer = modalButton("Close")
-    ))
+  # Tab 5: Interactive Plot
+  filtered_interactive_data <- reactive({
+    if (input$age_group_interactive == "All") {
+      plot_data  
+    } else {
+      plot_data %>% filter(Age_Group == input$age_group_interactive)
+    }
+  })
+  
+  output$interactivePlot <- renderPlotly({
+    req(nrow(filtered_interactive_data()) > 0)
+    
+    p <- ggplot(filtered_interactive_data(), aes(x = Violation.Year, y = total_violations, color = Age_Group, group = Age_Group)) +
+      geom_line(size = 1.2) +
+      geom_point(size = 3) +
+      theme_minimal(base_size = 14) +
+      scale_x_continuous(breaks = seq(min(plot_data$Violation.Year), max(plot_data$Violation.Year), 1)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      scale_color_brewer(palette = "Set2") +
+      labs(
+        title = "Traffic Violations Trends by Age Group",
+        x = "Year",
+        y = "Number of Violations",
+        color = "Age Group"
+      ) +
+      theme(
+        legend.position = "bottom",
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+        panel.grid.major = element_line(color = "grey80"),
+        panel.grid.minor = element_blank()
+      )
+    
+    ggplotly(p, tooltip = c("x", "y", "color"))
   })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
