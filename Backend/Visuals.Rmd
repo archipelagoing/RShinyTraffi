@@ -39,8 +39,15 @@ filtered_data <- traffic_data |>
   group_by(age_range, Violation.Description) |>
   summarise(count = n(), .groups = "drop")
 
+filtered_data <- filtered_data |>
+  filter(!is.na(age_range))
+
 ggplot(filtered_data, aes(x = age_range, y = count, fill = Violation.Description)) +
   geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = count), 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5, 
+            size = 3) + # Add labels on top of bars
   labs(
     title = "Top 5 Violations by Age Range",
     x = "Age Range",
@@ -50,3 +57,57 @@ ggplot(filtered_data, aes(x = age_range, y = count, fill = Violation.Description
   theme_minimal()
 ```
 
+Visualization 3 - Top 5 Violations by Age and Gender
+```{r}
+top_5_violations <- traffic_data |>
+  group_by(Violation.Description) |>
+  summarise(count = n()) |>
+  arrange(desc(count)) |>
+  slice_head(n = 5)
+
+filtered_data <- traffic_data |>
+  filter(Violation.Description %in% top_5_violations$Violation.Description) |>
+  group_by(age_range, Violation.Description, Gender) |>
+  summarise(count = n(), .groups = "drop")
+
+filtered_data <- filtered_data |>
+  mutate(
+    Gender = case_when(
+      Gender == "M" ~ "Male",
+      Gender == "F" ~ "Female",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  filter(!is.na(Gender)) |> 
+  mutate(Gender = factor(Gender, levels = c("Male", "Female")))
+
+ggplot(filtered_data, aes(x = age_range, y = count, fill = Gender)) +
+  geom_bar(stat = "identity", position = "fill", colour = "black") +
+  facet_wrap(~ Violation.Description, scales = "free_x") +
+  scale_fill_manual(
+    values = c("Male" = "lightblue", "Female" = "pink")
+  ) +
+  labs(
+    title = "Top 5 Violations by Age Range and Gender",
+    x = "Age Range",
+    y = "Proportion of Violations",
+    fill = "Gender"
+  ) +
+  theme_minimal()
+```
+
+Table 4 - Top 5 Violations for each Age Range
+```{r}
+library(dplyr)
+
+top_violations_by_age <- traffic_data %>%
+  group_by(age_range, Violation.Description) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  arrange(age_range, desc(Total)) %>%
+  group_by(age_range) %>%
+  slice_head(n = 5) %>%
+  ungroup()
+
+print(top_violations_by_age)
+
+```
