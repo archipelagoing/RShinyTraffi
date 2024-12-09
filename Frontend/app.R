@@ -33,7 +33,7 @@ top_violations <- traffic_data %>%
 plot_data <- traffic_data %>%
   filter(Violation.Description %in% top_violations$Violation.Description) %>%
   group_by(Violation.Year, Age_Group) %>%
-  summarise(total_violations = n(), .groups = "drop")
+  summarise(total_violations = n(), .groups = "drop")%>% filter(Age_Group != "Other")
 
 # Define UI
 ui <- fluidPage(
@@ -83,7 +83,7 @@ ui <- fluidPage(
         mainPanel(
           plotlyOutput("interactivePlot"),
           HTML("<h1 style='font-size: 20px; margin-top: 20px;'><u>Insights</u></h1>"),
-          HTML("<p style='font-size: 14px; margin-top: 20px;'>Overall, NYC traffic violations have increased across most age groups from 2020 to 2023. However, in 2020, all age groups except for 86-95 appear to have exactly 100 traffic violations within the top 5 violation categories. It is unclear whether this is due to potential data collection issues or if there was some sort of existing quota to fulfill during that year. Something to consider is that during the year 2020, law enforcement's focus may have been more on public safety rather than traffic violations due to the COVID-19 pandemic. However, we cannot conclude whether this fully explains the trend. Additionally, both the 16-25 and 26-35 age groups saw an increase in violations, which may suggest that younger drivers are more active on the roads in NYC. Since the 16-25 and 26-35 age groups had the highest number of violations in 2023, this could also indicate that they are more targeted demographics or that there are potentially fewer older drivers on the road. Finally another insight we found is that the 76-85 age group has shown the most consistent number of violations across the years, which could mean they are at lower risk of being issued a violation ticket.</p>")
+          HTML("<p style='font-size: 16px; margin-top: 20px;'>Overall, NYC traffic violations have increased across most age groups from 2020 to 2023. However, in 2020, all age groups except for 86-95 appear to have exactly 100 traffic violations within the top 5 violation categories. It is unclear whether this is due to potential data collection issues or if there was some sort of existing quota to fulfill during that year. Something to consider is that during the year 2020, law enforcement's focus may have been more on public safety rather than traffic violations due to the COVID-19 pandemic. However, we cannot conclude whether this fully explains the trend. Additionally, both the 16-25 and 26-35 age groups saw an increase in violations, which may suggest that younger drivers are more active on the roads in NYC. Since the 16-25 and 26-35 age groups had the highest number of violations in 2023, this could also indicate that they are more targeted demographics or that there are potentially fewer older drivers on the road. Finally another insight we found is that the 76-85 age group has shown the most consistent number of violations across the years, which could mean they are at lower risk of being issued a violation ticket.</p>")
         )
       )
     ),
@@ -205,7 +205,7 @@ server <- function(input, output) {
       theme_minimal(base_size = 14) +
       scale_x_continuous(breaks = seq(min(plot_data$Violation.Year), max(plot_data$Violation.Year), 1)) +
       scale_y_continuous(expand = c(0, 0)) +
-      scale_color_brewer(palette = "Paired") +
+      scale_color_brewer(palette = "Set2") +
       labs(
         title = "Traffic Violations Trends by Age Group",
         x = "Year",
