@@ -49,6 +49,9 @@ ui <- page_navbar(
     radioButtons("gender", "Select Gender:", 
                  choices = c("All", unique(traffic_data$Gender)),
                  selected = "All"),
+    radioButtons("view_type", "Select View:", 
+                 choices = c("Counts" = "count", "Proportions" = "proportion"),
+                 selected = "count"),
     selectInput("violation", "Select Violation Type:", 
                 choices = c("Top 5", top_5_violations),
                 selected = "Top 5"),
@@ -160,25 +163,26 @@ server <- function(input, output) {
     data %>% filter(Violation.Description %in% top_5_violations)
   })
   
-  # Plot output - modified to show only top 5 violations with value labels
+  # Plot output - modified to show only top 5 violations with value labels (added proportion)
   output$ticketPlot <- renderPlot({
-    # Create summary data for labels
     plot_data <- filtered_data() %>%
       count(Violation.Description, Gender) %>%
-      arrange(desc(n))
+      group_by(Gender) %>%
+      mutate(percentage = n / sum(n) * 100) %>%
+      ungroup()
     
-    ggplot(plot_data, aes(x = Violation.Description, y = n, fill = Gender)) +
-      geom_bar(stat = "identity", position = "dodge") +
-      geom_text(aes(label = n), 
-                position = position_dodge(width = 0.9), 
-                vjust = -0.5,
-                size = 3.5) +
-      theme_minimal() +
-      labs(title = "Number of Tickets by Top 5 Violation Types",
-           x = "Violation Type",
-           y = "Number of Tickets",
-           fill = "Gender") +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    if (input$view_type == "count") {
+      ggplot(plot_data, aes(x = Violation.Description, y = n, fill = Gender)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        geom_text(aes(label = n), position = position_dodge(0.9), vjust = -0.5) +
+        labs(y = "Count", title = "Traffic Violations by Type and Gender")
+    } else {
+      ggplot(plot_data, aes(x = Violation.Description, y = percentage, fill = Gender)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        geom_text(aes(label = paste0(round(percentage, 1), "%")),
+                  position = position_dodge(0.9), vjust = -0.5) +
+        labs(y = "Proportion (%)", title = "Proportion of Violations by Type and Gender")
+    }
   })
   
   # Scatter plot of age range by total violation
@@ -200,22 +204,22 @@ server <- function(input, output) {
   output$topViolationsPlot <- renderPlot({
     filtered_top_data <- filtered_data() %>%
       group_by(Age_Group, Violation.Description) %>%
-      summarise(count = n(), .groups = "drop")
+      summarise(count = n(), .groups = "drop") %>%
+      group_by(Age_Group) %>%
+      mutate(percentage = count / sum(count) * 100)
     
-    ggplot(filtered_top_data, aes(x = Age_Group, y = count, fill = Violation.Description)) +
-      geom_bar(stat = "identity", position = "dodge") +
-      geom_text(aes(label = count),
-                position = position_dodge(width = 0.9),
-                vjust = -0.5,
-                size = 3.5) +
-      labs(
-        title = "Top 5 Violations by Age Range",
-        x = "Age Range",
-        y = "Number of Violations",
-        fill = "Violation Type"
-      ) +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    if (input$view_type == "count") {
+      ggplot(filtered_top_data, aes(x = Age_Group, y = count, fill = Violation.Description)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        geom_text(aes(label = count), position = position_dodge(0.9), vjust = -0.5) +
+        labs(y = "Count", title = "Top Violations by Age Group")
+    } else {
+      ggplot(filtered_top_data, aes(x = Age_Group, y = percentage, fill = Violation.Description)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        geom_text(aes(label = paste0(round(percentage, 1), "%")), 
+                  position = position_dodge(0.9), vjust = -0.5) +
+        labs(y = "Proportion (%)", title = "Proportion of Violations by Age Group")
+    }
   })
   
   # Table output
