@@ -66,6 +66,7 @@ top_5_violations <- traffic_data |>
   slice_head(n = 5)
 
 filtered_data <- traffic_data |>
+  filter(Gender %in% c("M", "F")) |>
   filter(Violation.Description %in% top_5_violations$Violation.Description) |>
   group_by(age_range, Violation.Description, Gender) |>
   summarise(count = n(), .groups = "drop")
