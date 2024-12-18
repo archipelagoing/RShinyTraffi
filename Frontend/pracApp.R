@@ -10,11 +10,6 @@ library(plotly)
 # Load the data (replace the path with the correct one when running locally)
 traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
-##NEW CODE
-# Get all violations for detailed analysis
-all_violations <- sort(unique(traffic_data$Violation.Description))
-
-
 # Filter Gender column by "M" and "F"
 traffic_data <- traffic_data[traffic_data$Gender %in% c("M", "F"), ]
 
@@ -38,6 +33,10 @@ top_5_violations <- traffic_data %>%
   arrange(desc(n)) %>%
   slice_head(n = 5) %>%
   pull(Violation.Description)
+
+##NEW CODE
+# Get all violations for detailed analysis
+all_violations <- sort(unique(traffic_data$Violation.Description))
 
 # Prepare data for the time series plot
 plot_data <- traffic_data %>%
@@ -71,12 +70,11 @@ ui <- page_navbar(
             card(
               card_header("Top 5 Tickets by Violation Type and Gender"),
               plotOutput("ticketPlot")
-            ),card(
+            ),
+            card(
               card_header("Insights"),
-              div(
-                style = "padding: 15px;",
-                p("Across all demographics within the dataset, the five most common traffic violations include: speed in zone, uninspected motor vehicle, speed over 55 zone, weaving (moved from lane unsafely), and failing to stop at stop sign. Looking at age groups, the age group 26-35 had the most traffic violations overall. On the other hand, older drivers (76-85) had consistently low violation rates, which reflects either safer driving habits, less driving activity, or less focus from enforcement. Additionally, speeding violations were particularly higher among younger drivers (16-25 and 26-35), which might suggest that these age groups have riskier driving behaviors. Another interesting trend we found is that there was a high number of uninspected motor vehicle violations (approximately 655) which might indicate that there could be a widespread lack of awareness about inspection requirements.
-                  We were able to find that males, females, and an unidentified gender group (X) all had speed in Zone as their top violation. This may suggest that speeding is a primary violation across all genders, which could indicate the need for better education on anti-speeding resources, campaigns, and better speeding enforcement policies or strategies. The second most common violation for males was uninspected motor vehicles, while for females, it was moved from lane unsafely/weaving. Overall, males had the highest overall traffic violations across all genders.")
+              div(style = "padding: 15px;",
+                  p("Across all demographics within the dataset, the five most common traffic violations include: speed in zone, uninspected motor vehicle, speed over 55 zone, weaving (moved from lane unsafely), and failing to stop at stop sign...")
               )
             )
   ),
@@ -86,31 +84,28 @@ ui <- page_navbar(
             card(
               card_header("Age Distribution Analysis"),
               plotOutput("scatterPlot")
-            ),card(
+            ),
+            card(
               card_header("Insights"),
-              div(
-                style = "padding: 15px;",
-                p("This scatter plot reveals the relationship between age groups and total violations. The visualization helps identify which age groups are most frequently involved in traffic violations, showing potential patterns or trends across different age ranges in NYC.")
+              div(style = "padding: 15px;",
+                  p("This scatter plot reveals the relationship between age groups and total violations...")
               )
             )
   ),
   
   # Tab 3: Top Violations by Age
-  nav_panel("Top Violations by Age ",
+  nav_panel("Top Violations by Age",
             card(
               card_header("Top 5 Violations Analysis"),
               plotOutput("topViolationsPlot")
             ),
             card(
               card_header("Insights"),
-              div(
-                style = "padding: 15px;",
-                p("Traffic Violation Trends by Age Group (2020-2023)
-Overall, NYC traffic violations have increased across most age groups from 2020 to 2023. However, in 2020, all age groups except for 86-95 appear to have exactly 100 traffic violations within the top 5 violation categories. It is unclear whether this is due to potential data collection issues or if there was some sort of existing quota to fulfill during that year. Something to consider is that during the year 2020, law enforcement's focus may have been more on public safety rather than traffic violations due to the COVID-19 pandemic. However, we cannot conclude whether this fully explains the trend. Additionally, both the 16-25 and 26-35 age groups saw an increase in violations, which may suggest that younger drivers are more active on the roads in NYC. Since the 16-25 and 26-35 age groups had the highest number of violations in 2023, this could also indicate that they are more targeted demographics or that there are potentially fewer older drivers on the road. Finally another insight we found is that the 76-85 age group has shown the most consistent number of violations across the years, which could mean they are at lower risk of being issued a violation ticket.")
+              div(style = "padding: 15px;",
+                  p("Traffic Violation Trends by Age Group (2020-2023)...")
               )
             )
   ),
-  
   
   # Tab 4: Time Series Analysis
   nav_panel("Time Series Analysis",
@@ -123,12 +118,8 @@ Overall, NYC traffic violations have increased across most age groups from 2020 
             ),
             card(
               card_header("Key Insights"),
-              div(
-                style = "padding: 15px;",
-                p("Overall, NYC traffic violations have increased across most age groups from 2020 to 2023. However, in 2020, all age groups except for 86-95 appear to have exactly 100 traffic violations within the top 5 violation categories. It is unclear whether this is due to potential data collection issues or if there was some sort of existing quota to fulfill during that year."),
-                p("Something to consider is that during the year 2020, law enforcement's focus may have been more on public safety rather than traffic violations due to the COVID-19 pandemic. However, we cannot conclude whether this fully explains the trend."),
-                p("Additionally, both the 16-25 and 26-35 age groups saw an increase in violations, which may suggest that younger drivers are more active on the roads in NYC. Since the 16-25 and 26-35 age groups had the highest number of violations in 2023, this could also indicate that they are more targeted demographics or that there are potentially fewer older drivers on the road."),
-                p("Finally another insight we found is that the 76-85 age group has shown the most consistent number of violations across the years, which could mean they are at lower risk of being issued a violation ticket.")
+              div(style = "padding: 15px;",
+                  p("Overall, NYC traffic violations have increased across most age groups...")
               )
             )
   ),
@@ -137,12 +128,10 @@ Overall, NYC traffic violations have increased across most age groups from 2020 
   nav_panel("Data & Reports",
             card(
               card_header("Insights"),
-              div(
-                style = "padding: 15px;",
-                p("Our analysis of NYC traffic violations from 2020 to 2023 shows interesting trends and insights into road safety and enforcement patterns. Across all demographics within the dataset, the five most common traffic violations include: speed in zone, uninspected motor vehicle, speed over 55 zone, weaving (moved from lane unsafely), and failing to stop at stop sign. Looking at gender, we were able to find that across all years, males consistently received the most violations, which could reflect a combination of their driving patterns and enforcement practices that predominantly target males. Looking at age groups, the age group 26-35 had the most traffic violations overall. On the other hand, older drivers (76-85) had consistently low violation rates, which reflects either safer driving habits, less driving activity, or less focus from enforcement. Additionally, speeding violations were particularly higher among younger drivers (16-25 and 26-35), which might suggest that these age groups have riskier driving behaviors. Another interesting trend we found is that there was a high number of uninspected motor vehicle violations (approximately 655) which might indicate that there could be a widespread lack of awareness about inspection requirements. Now looking at yearly trends, traffic violations were lowest in 2021, which is most likely due to reduced driving activity and change in enforcement priorities during the COVID-19 pandemic. However, by 2023, violations peaked, with noticeable increases in younger age groups. This increase may possibly be driven by increased post-pandemic driving activity or improved enforcement efforts. The data suggests that there could be potential disparities in enforcement or targeting, as some demographics may see higher violation rates. To address these potential disparities, there should be increased awareness about inspection requirements and the risk of partaking in poor driving behaviors. This data may also help in enforcement strategies by shifting the focus on the top 5 traffic violations. Overall, analyzing this data is the first step to reducing violations, improving road safety, and better traffic enforcement in New York City.")
+              div(style = "padding: 15px;",
+                  p("Our analysis of NYC traffic violations from 2020 to 2023...")
               )
-            ),
-            
+            )
   ),
   
   ##NEW CODE
@@ -173,11 +162,12 @@ Overall, NYC traffic violations have increased across most age groups from 2020 
               )
             )
   ),
+  
   theme = bs_theme(version = 5)
 )
 
-# Define server logic for the app
-server <- function(input, output) {
+# Define server logic
+server <- function(input, output, session) {
   
   # Reactive data based on user input
   filtered_data <- reactive({
@@ -195,11 +185,10 @@ server <- function(input, output) {
       data <- data %>% filter(Violation.Description == input$violation)
     }
     
-    # Filter for only top 5 violations
     data %>% filter(Violation.Description %in% top_5_violations)
   })
   
-  # Plot output - modified to show only top 5 violations with value labels (added proportion)
+  # Plot output - modified to show only top 5 violations with value labels
   output$ticketPlot <- renderPlot({
     plot_data <- filtered_data() %>%
       count(Violation.Description, Gender) %>%
@@ -221,7 +210,7 @@ server <- function(input, output) {
     }
   })
   
-  # Scatter plot of age range by total violation
+  # Scatter plot
   output$scatterPlot <- renderPlot({
     traffic_data_2 <- traffic_data %>%
       group_by(Age_Group) %>%
@@ -236,7 +225,7 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
   
-  # Top 5 types of violations by age range and gender with value labels
+  # Top violations plot
   output$topViolationsPlot <- renderPlot({
     filtered_top_data <- filtered_data() %>%
       group_by(Age_Group, Violation.Description) %>%
@@ -257,33 +246,6 @@ server <- function(input, output) {
         labs(y = "Proportion (%)", title = "Proportion of Violations by Age Group")
     }
   })
-  
-  # Table output
-  output$ticketTable <- renderDataTable({
-    filtered_data()
-  })
-  
-  # Render Visuals.Rmd
-  output$visualsOutput <- renderUI({
-    includeMarkdown("Visuals.Rmd")
-  })
-  
-  # Render age_subsets.Rmd
-  output$ageSubsetsOutput <- renderUI({
-    includeMarkdown("age_subsets.Rmd")
-  })
-  
-  # Opening R Markdown File
-  observeEvent(input$show_report, {
-    showModal(modalDialog(
-      title = "Detailed Traffic Report/Analysis",
-      includeMarkdown("frontEnd.Rmd"),
-      size = "l",  
-      easyClose = TRUE,
-      footer = modalButton("Close")
-    ))
-  })
-  
   # Interactive Time Series Plot
   filtered_interactive_data <- reactive({
     if (input$age_group_interactive == "All") {

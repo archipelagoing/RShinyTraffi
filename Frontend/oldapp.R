@@ -10,11 +10,6 @@ library(plotly)
 # Load the data (replace the path with the correct one when running locally)
 traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
-##NEW CODE
-# Get all violations for detailed analysis
-all_violations <- sort(unique(traffic_data$Violation.Description))
-
-
 # Filter Gender column by "M" and "F"
 traffic_data <- traffic_data[traffic_data$Gender %in% c("M", "F"), ]
 
@@ -145,34 +140,6 @@ Overall, NYC traffic violations have increased across most age groups from 2020 
             
   ),
   
-  ##NEW CODE
-  # Tab 6: Detailed Violation Analysis
-  nav_panel("Detailed Violation Analysis",
-            layout_columns(
-              card(
-                card_header("Select Violation"),
-                selectInput("detailed_violation", "Choose Violation Type:",
-                            choices = all_violations,
-                            selected = all_violations[1])
-              ),
-              card(
-                card_header("Distribution by Age Group"),
-                plotOutput("violation_by_age")
-              ),
-              card(
-                card_header("Distribution by Gender"),
-                plotOutput("violation_by_gender")
-              ),
-              card(
-                card_header("Age and Gender Heatmap"),
-                plotOutput("violation_heatmap")
-              ),
-              card(
-                card_header("Key Statistics"),
-                textOutput("violation_stats")
-              )
-            )
-  ),
   theme = bs_theme(version = 5)
 )
 
@@ -324,81 +291,6 @@ server <- function(input, output) {
       )
     
     ggplotly(p, tooltip = c("x", "y", "color"))
-  })
-  
-  # Opening R Markdown File
-  observeEvent(input$show_report, {
-    showModal(modalDialog(
-      title = "Detailed Traffic Report/Analysis",
-      includeMarkdown("frontEnd.Rmd"),
-      size = "l",  
-      easyClose = TRUE,
-      footer = modalButton("Close")
-    ))
-  })
-  
-  ##NEW CODE
-  # New reactive dataset for detailed violation analysis
-  detailed_violation_data <- reactive({
-    traffic_data %>%
-      filter(Violation.Description == input$detailed_violation)
-  })
-  
-  ##NEW CODE
-  # Plot by age group
-  output$violation_by_age <- renderPlot({
-    detailed_violation_data() %>%
-      count(Age_Group) %>%
-      ggplot(aes(x = Age_Group, y = n)) +
-      geom_bar(stat = "identity", fill = "steelblue") +
-      geom_text(aes(label = n), vjust = -0.5) +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-      labs(x = "Age Group", y = "Number of Violations",
-           title = "Violation Distribution by Age Group")
-  })
-  
-  ##NEW CODE
-  # Plot by gender
-  output$violation_by_gender <- renderPlot({
-    detailed_violation_data() %>%
-      count(Gender) %>%
-      ggplot(aes(x = Gender, y = n, fill = Gender)) +
-      geom_bar(stat = "identity") +
-      geom_text(aes(label = n), vjust = -0.5) +
-      theme_minimal() +
-      labs(x = "Gender", y = "Number of Violations",
-           title = "Violation Distribution by Gender")
-  })
-  
-  ##NEW CODE
-  # Heatmap of age and gender
-  output$violation_heatmap <- renderPlot({
-    detailed_violation_data() %>%
-      count(Age_Group, Gender) %>%
-      ggplot(aes(x = Age_Group, y = Gender, fill = n)) +
-      geom_tile() +
-      geom_text(aes(label = n), color = "white") +
-      scale_fill_viridis_c() +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-      labs(x = "Age Group", y = "Gender", 
-           title = "Age and Gender Distribution Heatmap")
-  })
-  
-  ##NEW CODE
-  # Key statistics
-  output$violation_stats <- renderText({
-    data <- detailed_violation_data()
-    total_violations <- nrow(data)
-    most_common_age <- names(which.max(table(data$Age_Group)))
-    most_common_gender <- names(which.max(table(data$Gender)))
-    
-    paste0(
-      "Total violations: ", total_violations, "\n",
-      "Most common age group: ", most_common_age, "\n",
-      "Most common gender: ", most_common_gender
-    )
   })
 }
 
