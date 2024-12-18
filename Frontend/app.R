@@ -10,6 +10,9 @@ library(plotly)
 # Load the data (replace the path with the correct one when running locally)
 traffic_data <- read.csv("Traffic_Tickets_Issued__Number_of_Tickets_by_Age__Gender__and_Violation_20241113.csv")
 
+# Filter Gender column by "M" and "F"
+traffic_data <- traffic_data[traffic_data$Gender %in% c("M", "F"), ]
+
 # Add Age Group column to the dataset
 traffic_data <- traffic_data %>%
   mutate(Age_Group = case_when(
